@@ -1,0 +1,82 @@
+﻿@page "/"
+@page "/employees"
+@inject ITenantProvider TenantProvider
+@inject IEmployeeService EmployeeService
+@rendermode InteractiveServer
+
+<div class="container">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <h2>Select a Database</h2>
+            <select class="form-select" @onchange="OnDatabaseChanged">
+                <option value="">-- Select Tenent --</option>
+                <option value="DB1">Tenent 1</option>
+                <option value="DB2">Tenent 2</option>
+            </select>
+        </div>
+    </div>
+
+    @if (employees != null)
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Employee List</h3>
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Id</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Email</th>
+                                <th>Salary</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (employees.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center">No employees found.</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var employee in employees)
+                                {
+                                    <tr>
+                                        <td>@employee.Id</td>
+                                        <td>@employee.FirstName</td>
+                                        <td>@employee.LastName</td>
+                                        <td>@employee.Email</td>
+                                        <td>@employee.Salary.ToString("C")</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info" role="alert">
+            Select tenant from dropdown
+        </div>
+    }
+</div>
+
+@code {
+    private List<Employee> employees;
+
+    private async Task OnDatabaseChanged(ChangeEventArgs e)
+    {
+        var selectedDatabase = e.Value.ToString();
+        TenantProvider.SetTenant(selectedDatabase);
+
+        // Ensure tenant is set before calling the service
+        employees = await EmployeeService.GetEmployeesAsync();
+    }
+}
+
+
